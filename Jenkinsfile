@@ -1,45 +1,51 @@
 pipeline {
     agent any
 
+    environment {
+        JUNIT_JAR = 'libs\\junit-4.13.2.jar'
+        HAMCREST_JAR = 'libs\\hamcrest-core-1.3.jar'
+    }
+
     stages {
         stage('Build') {
             steps {
                 echo 'Compiling source...'
-                sh 'mkdir -p out'
-                sh 'javac -d out src/org/example/App.java'
+                bat 'mkdir out'
+                bat 'javac -d out src\\org\\example\\App.java'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                sh 'javac -cp .:junit.jar -d out src/org/example/AppTest.java'
-                sh 'java -cp .:junit.jar:out org.junit.runner.JUnitCore org.example.AppTest'
+                bat 'mkdir out'
+                bat 'javac -cp .;%JUNIT_JAR%;%HAMCREST_JAR% -d out src\\org\\example\\AppTest.java'
+                bat 'java -cp out;%JUNIT_JAR%;%HAMCREST_JAR% org.junit.runner.JUnitCore org.example.AppTest'
             }
         }
 
         stage('Package') {
             steps {
                 echo 'Packaging JAR...'
-                sh 'jar cf app.jar -C out .'
+                bat 'jar cf app.jar -C out .'
             }
         }
 
         stage('Deploy') {
             steps {
                 echo 'Deploying artifact...'
-                sh 'mkdir -p deploy'
-                sh 'cp app.jar deploy/'
+                bat 'mkdir deploy'
+                bat 'copy app.jar deploy\\'
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline completed successfully.'
+            echo '✅ Pipeline completed successfully.'
         }
         failure {
-            echo 'Pipeline failed.'
+            echo '❌ Pipeline failed.'
         }
     }
 }
