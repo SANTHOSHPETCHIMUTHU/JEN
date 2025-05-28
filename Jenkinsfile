@@ -18,9 +18,18 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                bat 'mkdir out'
-                bat 'javac -cp .;%JUNIT_JAR%;%HAMCREST_JAR% -d out src\\org\\example\\AppTest.java'
-                bat 'java -cp out;%JUNIT_JAR%;%HAMCREST_JAR% org.junit.runner.JUnitCore org.example.AppTest'
+                bat '''
+                if not exist "libs\\junit-4.13.2.jar" (
+                    echo Missing JUnit JAR! Please upload it to libs\\ folder.
+                    exit /b 1
+                )
+                if not exist "libs\\hamcrest-core-1.3.jar" (
+                    echo Missing Hamcrest JAR! Please upload it to libs\\ folder.
+                    exit /b 1
+                )
+                javac -cp out;%JUNIT_JAR%;%HAMCREST_JAR% -d out src\\org\\example\\AppTest.java
+                java -cp out;%JUNIT_JAR%;%HAMCREST_JAR% org.junit.runner.JUnitCore org.example.AppTest
+                '''
             }
         }
 
